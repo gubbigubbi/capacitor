@@ -88,7 +88,11 @@ import {
   PushNotificationActionPerformed } from '@capacitor/core';
 
 const { PushNotifications } = Plugins;
+
+const isPushAvailable = Capacitor.isPluginAvailable('PushNotifications');
 ```
+
+Note: we also added a way to test if the PushNotification plugin is available with our `Capacitor.isPluginAvailable()` method. This will prevent errors on unsupported devices.
 
 Then, add the `ngOnInit()` method with some API methods to register and monitor for push notifications. We will also add an `alert()` a few of the events to monitor what is happening:
 
@@ -101,33 +105,35 @@ ngOnInit() {
     // Register with Apple / Google to receive push via APNS/FCM
     PushNotifications.register();
 
-    // On succcess, we should be able to receive notifications
-    PushNotifications.addListener('registration', 
-      (token: PushNotificationToken) => {
-        alert('Push registration success, token: ' + token.value);
-      }
-    );
+    if (isPushAvailable) { // test to see if the push notifications plugin is available
+      // On succcess, we should be able to receive notifications
+      PushNotifications.addListener('registration', 
+        (token: PushNotificationToken) => {
+          alert('Push registration success, token: ' + token.value);
+        }
+      );
 
-    // Some issue with our setup and push will not work
-    PushNotifications.addListener('registrationError', 
-      (error: any) => {
-        alert('Error on registration: ' + JSON.stringify(error));
-      }
-    );
+      // Some issue with our setup and push will not work
+      PushNotifications.addListener('registrationError', 
+        (error: any) => {
+          alert('Error on registration: ' + JSON.stringify(error));
+        }
+      );
 
-    // Show us the notification payload if the app is open on our device
-    PushNotifications.addListener('pushNotificationReceived', 
-      (notification: PushNotification) => {
-        alert('Push received: ' + JSON.stringify(notification));
-      }
-    );
+      // Show us the notification payload if the app is open on our device
+      PushNotifications.addListener('pushNotificationReceived', 
+        (notification: PushNotification) => {
+          alert('Push received: ' + JSON.stringify(notification));
+        }
+      );
 
-    // Method called when tapping on a notification
-    PushNotifications.addListener('pushNotificationActionPerformed', 
-      (notification: PushNotificationActionPerformed) => {
-        alert('Push action performed: ' + JSON.stringify(notification));
-      }
-    );
+      // Method called when tapping on a notification
+      PushNotifications.addListener('pushNotificationActionPerformed', 
+        (notification: PushNotificationActionPerformed) => {
+          alert('Push action performed: ' + JSON.stringify(notification));
+        }
+      );
+    }
 }
 ```
 
